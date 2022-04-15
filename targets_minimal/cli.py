@@ -20,14 +20,19 @@ def cli(args = sys.argv[0]):
                         type = str,
                         default = 'target-selector', 
                         help = 'Name of the target selector channel.')
+    parser.add_argument('--config_file',
+                        type = str,
+                        default = 'db_config.yml', 
+                        help = 'Database configuration file.')
     if(len(sys.argv[1:]) == 0):
         parser.print_help()
         parser.exit()
     args = parser.parse_args()
     main(redis_endpoint = args.redis_endpoint, 
-         redis_channel = args.redis_channel)
+         redis_channel = args.redis_channel,
+         config_file = args.config_file)
 
-def main(redis_endpoint, redis_channel)
+def main(redis_endpoint, redis_channel config_file)
     """Starts the minimal target selector.
   
     Args: 
@@ -40,7 +45,7 @@ def main(redis_endpoint, redis_channel)
     """
     set_logger('DEBUG')
     MinimalTargetSelector = TargetsMinimal(redis_endpoint, 
-                          redis_channel)
+                          redis_channel, config_file)
     TargetsMinimal.start()
 
 if(__name__ == '__main__'):
