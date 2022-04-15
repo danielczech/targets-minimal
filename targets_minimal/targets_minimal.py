@@ -4,8 +4,9 @@ import yaml
 import scipy.constants as constants
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
+import numpy as np
 
-from .logger import log
+from logger import log
 
 class TargetsMinimal(object):
     """A minimal implementation of the target selector.
@@ -20,13 +21,12 @@ class TargetsMinimal(object):
                                               port=redis_port, 
                                               decode_responses=True)
         self.redis_channel = redis_channel
-        self.config_file = config_file
-
+        self.configure_db(config_file)
 
     def start(self):
         """Start the minimal target selector.
         """
-        log.info('Starting. Listening on {}'.format(self.redis_channel))
+        log.info('Starting. Listening on Redis channel: {}'.format(self.redis_channel))
         ps = self.redis_server.pubsub(ignore_subscribe_messages=True)
         ps.subscribe(self.redis_channel)
         for msg in ps.listen():
@@ -44,10 +44,10 @@ class TargetsMinimal(object):
         """Read the database configuration yaml file. 
         """
         try:
-            with open(cfg_file, 'r') as f:
+            with open(config_file, 'r') as f:
                 try:
                     cfg = yaml.safe_load(f)
-                    return(cfg['mysql']
+                    return(cfg['mysql'])
                 except yaml.YAMLError as E:
                     log.error(E)
         except IOError:
@@ -64,7 +64,8 @@ class TargetsMinimal(object):
  
         """
         msg_data = msg['data']
-        msg_components = msg_data.split[':']
+        log.info(msg_data)
+        msg_components = msg_data.split(':')
         # Basic checks of incoming message
         if((len(msg_components) == 7) & (msg_components[0] == 'new-target')):
             subarray = msg_components[1]       
@@ -77,20 +78,22 @@ class TargetsMinimal(object):
         else:
             log.warning('Unrecognised message: {}'.format(msg_data))
  
-    def calculate_targets(self, subarray, target_name, ra_deg, dec_deg, fecenter, obsid)
+    def calculate_targets(self, subarray, target_name, ra_deg, dec_deg, fecenter, obsid):
         """Calculates and communicates targets within the current field of view 
         for downstream processes. 
         """
-        log.info('Calculating for {} at ({}, {})'.format(target_name, ra_deg, dec_deg)
+        log.info('Calculating for {} at ({}, {})'.format(target_name, ra_deg, dec_deg))
         # Calculate beam radius (TODO: generalise for other antennas besides MeerKAT):
         beam_radius = 0.5*(constants.c/fecenter)/13.5         
+        desired_columns = 'ra, decl, source_id, `dist.c`'
         targets_query = """
-                        SELECT * 
-                        FROM
+                        SELECT {}
+                        FROM target_list
                         WHERE ACOS(SIN(RADIANS(decl))*SIN({})+ 
                         COS(RADIANS(decl))*COS({})*COS({} - RADIANS(ra))) < {}; 
-                        """.format(np.deg2rad(ra_deg), np.deg2rad(dec_deg), beam_radius)
-        target_list = pd.read_sql(query, con=self.connection)
+                        """.format(desired_columns, np.deg2rad(dec_deg), np.deg2rad(dec_deg), np.deg2rad(ra_deg), beam_radius)
+        log.info(targets_query)
+        target_list = pd.read_sql(targets_query, con=self.connection)
         log.info(target_list)
 
 
