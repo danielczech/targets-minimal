@@ -1,0 +1,25 @@
+import setuptools
+
+requires = [
+    'numpy >= 1.18.1',
+    'redis >= 3.4.1',
+    ]
+
+setuptools.setup(
+    name = 'targets_minimal',
+    version = '1.0',
+    url = 'https://github.com/UCBerkeleySETI/targets-minimal',
+    license = 'MIT',
+    author = 'Daniel Czech',
+    author_email = 'danielc@berkeley.edu',
+    description = 'Minimal target selector for Breakthrough Listen\'s commensal observing',
+    packages = [
+        'targets_minimal',
+        ],
+    install_requires=requires,
+    entry_points = {
+        'console_scripts':[
+            'targets_minimal = targets_minimal.cli:cli',
+            ]
+        },
+    )
