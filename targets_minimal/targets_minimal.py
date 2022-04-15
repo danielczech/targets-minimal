@@ -84,17 +84,17 @@ class TargetsMinimal(object):
         """
         log.info('Calculating for {} at ({}, {})'.format(target_name, ra_deg, dec_deg))
         # Calculate beam radius (TODO: generalise for other antennas besides MeerKAT):
+        log.info(fecenter)
         beam_radius = 0.5*(constants.c/fecenter)/13.5         
         log.info(beam_radius)
         targets_query = """
                         SELECT *
                         FROM target_list
-                        WHERE ACOS( SIN( RADIANS('"dec"') )*SIN({}) + COS( RADIANS('"dec"') )*COS({})*COS({} - RADIANS('"ra"'))) < {}; 
+                        WHERE ACOS(SIN(RADIANS(`dec`))*SIN({})+COS(RADIANS(`dec`))*COS({})*COS({}-RADIANS(`ra`)))<{};
                         """.format(np.deg2rad(dec_deg), np.deg2rad(dec_deg), np.deg2rad(ra_deg), beam_radius)
         log.info(targets_query)
         target_list = pd.read_sql(targets_query, con=self.connection)
         log.info(target_list)
-
 
 
 
