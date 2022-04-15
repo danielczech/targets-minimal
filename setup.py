@@ -12,7 +12,7 @@ requires = [
 setuptools.setup(
     name = 'targets_minimal',
     version = '1.0',
-    url = 'https://github.com/UCBerkeleySETI/targets-minimal',
+    url = 'https://github.com/danielczech/targets-minimal',
     license = 'MIT',
     author = 'Daniel Czech',
     author_email = 'danielc@berkeley.edu',
