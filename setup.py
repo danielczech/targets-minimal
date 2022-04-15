@@ -3,6 +3,10 @@ import setuptools
 requires = [
     'numpy >= 1.18.1',
     'redis >= 3.4.1',
+    'pandas >= 1.4.2',
+    'PyYAML >= 6.0',
+    'scipy >= 1.8.0',
+    'SQLAlchemy >= 1.4.35'
     ]
 
 setuptools.setup(
