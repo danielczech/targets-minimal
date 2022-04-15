@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 import numpy as np
 
-from logger import log
+from .logger import log
 
 class TargetsMinimal(object):
     """A minimal implementation of the target selector.
@@ -85,13 +85,12 @@ class TargetsMinimal(object):
         log.info('Calculating for {} at ({}, {})'.format(target_name, ra_deg, dec_deg))
         # Calculate beam radius (TODO: generalise for other antennas besides MeerKAT):
         beam_radius = 0.5*(constants.c/fecenter)/13.5         
-        desired_columns = 'ra, decl, source_id, `dist.c`'
+        log.info(beam_radius)
         targets_query = """
-                        SELECT {}
+                        SELECT *
                         FROM target_list
-                        WHERE ACOS(SIN(RADIANS(decl))*SIN({})+ 
-                        COS(RADIANS(decl))*COS({})*COS({} - RADIANS(ra))) < {}; 
-                        """.format(desired_columns, np.deg2rad(dec_deg), np.deg2rad(dec_deg), np.deg2rad(ra_deg), beam_radius)
+                        WHERE ACOS( SIN( RADIANS('"dec"') )*SIN({}) + COS( RADIANS('"dec"') )*COS({})*COS({} - RADIANS('"ra"'))) < {}; 
+                        """.format(np.deg2rad(dec_deg), np.deg2rad(dec_deg), np.deg2rad(ra_deg), beam_radius)
         log.info(targets_query)
         target_list = pd.read_sql(targets_query, con=self.connection)
         log.info(target_list)
