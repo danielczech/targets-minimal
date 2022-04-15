@@ -1,8 +1,8 @@
 import argparse 
 import sys
 
-from .targets_minimal import TargetsMinimal
-from .logger import log, set_logger
+from targets_minimal import TargetsMinimal
+from logger import log, set_logger
 
 def cli(args = sys.argv[0]):
     """Command line interface for the automator. 
@@ -32,13 +32,14 @@ def cli(args = sys.argv[0]):
          redis_channel = args.redis_channel,
          config_file = args.config_file)
 
-def main(redis_endpoint, redis_channel config_file)
+def main(redis_endpoint, redis_channel, config_file):
     """Starts the minimal target selector.
   
     Args: 
         redis_endpoint (str): Redis endpoint (of the form <host IP
         address>:<port>) 
         redis_chan (str): Name of the target selector Redis channel. 
+        config_file (str): Location of the database config file (yml).
     
     Returns:
         None
@@ -46,7 +47,7 @@ def main(redis_endpoint, redis_channel config_file)
     set_logger('DEBUG')
     MinimalTargetSelector = TargetsMinimal(redis_endpoint, 
                           redis_channel, config_file)
-    TargetsMinimal.start()
+    MinimalTargetSelector.start()
 
 if(__name__ == '__main__'):
     cli() 
