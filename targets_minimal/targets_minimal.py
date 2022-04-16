@@ -5,6 +5,8 @@ import scipy.constants as constants
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 import numpy as np
+import json
+import time
 
 from .logger import log
 
@@ -84,17 +86,37 @@ class TargetsMinimal(object):
         """
         log.info('Calculating for {} at ({}, {})'.format(target_name, ra_deg, dec_deg))
         # Calculate beam radius (TODO: generalise for other antennas besides MeerKAT):
-        log.info(fecenter)
         beam_radius = 0.5*(constants.c/fecenter)/13.5         
-        log.info(beam_radius)
         targets_query = """
-                        SELECT *
+                        SELECT `source_id`, `ra`, `dec`, `dist_c`
                         FROM target_list
                         WHERE ACOS(SIN(RADIANS(`dec`))*SIN({})+COS(RADIANS(`dec`))*COS({})*COS({}-RADIANS(`ra`)))<{};
                         """.format(np.deg2rad(dec_deg), np.deg2rad(dec_deg), np.deg2rad(ra_deg), beam_radius)
-        log.info(targets_query)
+        start_ts = time.time()
         target_list = pd.read_sql(targets_query, con=self.connection)
-        log.info(target_list)
+        end_ts = time.time()
+        log.info('Retrieved {} targets in field of view in {} seconds'.format(target_list.shape, end_ts - start_ts))
+        json_list = self.format_targets(target_list)
+        # Write the list of targets to Redis under OBSID and alert listeners
+        # that new targets are available:
+        self.redis_server.set(obsid, json_list)
+        self.redis_server.publish(self.redis_channel, 'new-targets:{}:{}'.format(subarray, obsid))
+
+    def format_targets(self, df):
+        """Formats dataframe target list into JSON list of dict for storing in Redis. 
+        """ 
+        output_list = []
+        df = df.to_numpy()
+        for i in range(df.shape[0]):
+            source_i = {}
+            source_i['source_id'] = df[i, 0]
+            source_i['ra'] = df[i, 1]
+            source_i['dec'] = df[i, 2]
+            output_list.append(source_i)
+        json_list = json.dumps(output_list)
+        return(json_list)
+
+
 
 
 
