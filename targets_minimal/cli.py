@@ -16,10 +16,14 @@ def cli(args = sys.argv[0]):
                         type = str,
                         default = '127.0.0.1:6379', 
                         help = 'Local Redis endpoint')
-    parser.add_argument('--redis_channel',
+    parser.add_argument('--pointing_channel',
                         type = str,
-                        default = 'target-selector', 
-                        help = 'Name of the target selector channel.')
+                        default = 'target-selector:new-pointing', 
+                        help = 'Name of the channel from which information about new pointings will be received.')
+    parser.add_argument('--targets_channel',
+                        type = str,
+                        default = 'target-selector:targets', 
+                        help = 'Name of the channel to which targets information will be published.')
     parser.add_argument('--config_file',
                         type = str,
                         default = 'db_config.yml', 
@@ -29,24 +33,28 @@ def cli(args = sys.argv[0]):
         parser.exit()
     args = parser.parse_args()
     main(redis_endpoint = args.redis_endpoint, 
-         redis_channel = args.redis_channel,
+         pointing_channel = args.pointing_channel,
+         targets_channel = args.targets_channel,
          config_file = args.config_file)
 
-def main(redis_endpoint, redis_channel, config_file):
+def main(redis_endpoint, pointing_channel, targets_channel, config_file):
     """Starts the minimal target selector.
   
     Args: 
         redis_endpoint (str): Redis endpoint (of the form <host IP
         address>:<port>) 
-        redis_chan (str): Name of the target selector Redis channel. 
+        pointing_channel (str): Name of the channel from which the minimal target
+        selector will receive new pointing information.  
+        targets_channel (str): Name of the channel to which the minimal target
+        selector will publish target information.  
         config_file (str): Location of the database config file (yml).
     
     Returns:
         None
     """
     set_logger('DEBUG')
-    MinimalTargetSelector = TargetsMinimal(redis_endpoint, 
-                          redis_channel, config_file)
+    MinimalTargetSelector = TargetsMinimal(redis_endpoint, pointing_channel, 
+                            targets_channel, config_file)
     MinimalTargetSelector.start()
 
 if(__name__ == '__main__'):
