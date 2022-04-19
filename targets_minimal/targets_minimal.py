@@ -98,16 +98,17 @@ class TargetsMinimal(object):
         target_list = pd.read_sql(targets_query, con=self.connection)
         end_ts = time.time()
         log.info('Retrieved {} targets in field of view in {} seconds'.format(target_list.shape[0], int(end_ts - start_ts)))
-        json_list = self.format_targets(target_list)
+        pointing_dict = {'primary_pointing':target_name, 'primary_ra':ra_deg, 'primary_dec':dec_deg}
+        json_list = self.format_targets(target_list, pointing_dict)
         # Write the list of targets to Redis under OBSID and alert listeners
         # that new targets are available:
         self.redis_server.set('targets:{}'.format(obsid), json_list)
         self.redis_server.publish(self.targets_channel, 'targets:{}'.format(obsid))
 
-    def format_targets(self, df):
+    def format_targets(self, df, pointing_dict):
         """Formats dataframe target list into JSON list of dict for storing in Redis. 
         """ 
-        output_list = []
+        output_list = [pointing_dict]
         df = df.to_numpy()
         for i in range(df.shape[0]):
             source_i = {}
