@@ -101,8 +101,8 @@ class TargetsMinimal(object):
         json_list = self.format_targets(target_list)
         # Write the list of targets to Redis under OBSID and alert listeners
         # that new targets are available:
-        self.redis_server.set(obsid, json_list)
-        self.redis_server.publish(self.targets_channel, '{}:{}'.format(subarray, obsid))
+        self.redis_server.set('targets:{}'.format(obsid), json_list)
+        self.redis_server.publish(self.targets_channel, 'targets:{}'.format(obsid))
 
     def format_targets(self, df):
         """Formats dataframe target list into JSON list of dict for storing in Redis. 
