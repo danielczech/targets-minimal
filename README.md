@@ -1,8 +1,28 @@
 ## Minimal Target Selector
 
 Provides basic target selection capabilities. 
-  
-**Redis interfacing**
+
+**Usage:**  
+
+```
+usage: /opt/virtualenv/bluse3.9/bin/targets_minimal [options]
+
+Start the Commensal Automator
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --redis_endpoint REDIS_ENDPOINT
+                        Local Redis endpoint
+  --pointing_channel POINTING_CHANNEL
+                        Name of the channel from which information about new pointings will be received.
+  --targets_channel TARGETS_CHANNEL
+                        Name of the channel to which targets information will be published.
+  --config_file CONFIG_FILE
+                        Database configuration file.
+```      
+
+
+**Redis interfacing:**
 
 This minimimal target selector provides the coordinates of stars within the current field of view.  
 When a new source is tracked by the `coordinator`, the following message should be sent to the 
