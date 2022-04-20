@@ -33,7 +33,7 @@ Upon receiving this message, the target selector does the following:
 
 1. Calculates an estimate of the radius of the primary beam at frequency `FECENTER`.  
 2. Retrieves the list of targets available within the primary field of view from the primary star database.  
-3. Formats the list into a list of dictionaries: `[{source_id, ra, dec}, {source_id, ra, dec}, ...`
+3. Formats the list into a list of dictionaries: `[{primary_pointing, primary_ra, primary_dec}, {source_id_0, ra, dec}, {source_id_1, ra, dec}, ... ]`
 4. Saves this list in the JSON format in Redis under the key given by `OBSID`.
 5. Publishes a message: `<subarray name>:<OBSID>` to the `targets` Redis channel.
 
@@ -50,14 +50,14 @@ Logging: `/var/log/bluse/targets_minimal/targets_minimal.err`
 Starting via circus: `circusctl --endpoint tcp://10.98.81.254:5555 start targets_minimal`  
 
 Example:  
-`circusctl --endpoint tcp://10.98.81.254:5555 start targets_minimal`  
-```
+```circusctl --endpoint tcp://10.98.81.254:5555 start targets_minimal
+  
 [2022-04-20 12:44:55,714 - INFO - targets_minimal.py:23] Initialising the minimal target selector
 [2022-04-20 12:44:55,774 - INFO - targets_minimal.py:35] Starting minmial target selector.
-[2022-04-20 12:44:55,774 - INFO - targets_minimal.py:36] Listening for new pointings on Redis channel: target-selector:new-pointing
-```
-`redis-cli publish target-selector:new-pointing test_array:test_src_name:40.44:60.52:1284000000:test_obsid`
-```
+[2022-04-20 12:44:55,774 - INFO - targets_minimal.py:36] Listening for new pointings on Redis channel: target-selector:new-pointing  
+
+redis-cli publish target-selector:new-pointing test_array:test_src_name:41.44:60.52:1284000000:test_obsid  
+    
 [2022-04-20 13:21:50,652 - INFO - targets_minimal.py:92] Calculating for test_src_name at (40.44, 60.52)
 [2022-04-20 13:22:33,686 - INFO - targets_minimal.py:103] Retrieved 910 targets in field of view in 43 seconds
 ```
@@ -66,4 +66,11 @@ Example:
 Database config file must be placed in this location: `/usr/local/etc/bluse/db_config.yml`  
 Use virtual environment: `source /opt/virtualenv/bluse3.9/bin/activate`   
 Install via `python3.9 setup.py install` into the virtual environment selected.  
+  
+**To Do:**   
 
+- A more nuanced calculation of the radius of the primary field of view would be useful. For example, 
+it may be preferable to consider the highest frequency of the band instead of the centre frequency in 
+order to ensure that targets are within the field of view for all frequencies. 
+
+- Support for multiple simultaneous subarrays is needed. 

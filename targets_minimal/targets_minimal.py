@@ -88,7 +88,13 @@ class TargetsMinimal(object):
         self.connection = self.engine.connect()
 
     def read_config_file(self, config_file):
-        """Read the database configuration yaml file. 
+        """Read the database configuration yaml file.
+
+        Args:
+            config_file (str): File path to the .yml DB configuration file. 
+
+        Returns:
+            None
         """
         try:
             with open(config_file, 'r') as f:
@@ -99,7 +105,6 @@ class TargetsMinimal(object):
                     log.error(E)
         except IOError:
             log.error('Config file not found')
-
  
     def parse_msg(self, msg):
         """Examines and parses incoming messages, and initiates the
@@ -109,6 +114,11 @@ class TargetsMinimal(object):
 
         `<subarray name>:<target name>:<RA (deg)>:<Dec (deg)>:<FECENTER>:<OBSID>`
  
+        Args:
+            msg (str): The incoming message from the `pointing_channel`. 
+
+        Returns:
+            None
         """
         msg_data = msg['data']
         log.info(msg_data)
@@ -126,8 +136,23 @@ class TargetsMinimal(object):
             log.warning('Unrecognised message: {}'.format(msg_data))
  
     def calculate_targets(self, subarray, target_name, ra_deg, dec_deg, fecenter, obsid):
-        """Calculates and communicates targets within the current field of view 
-        for downstream processes. 
+        """Calculates and communicates targets within the current field of view
+        for downstream processes.
+
+        Args:
+            subarray (str): The name of the current subarray.  
+            (TODO: use this to manage multiple simultaneous subarrays). 
+            target_name (str): The name of the primary pointing target.
+            ra_deg (float): RA in degrees of the primary pointing target. 
+            J2000 coordinates should be used if the original 26M Gaia 
+            DR2-derived star list is used.
+            dec_deg (float): As above, Dec in degrees. 
+            fecenter (float): The centre frequency of the current observation.
+            (TODO: more nuanced estimate of field of view).
+            obsid (str): `OBSID` (unique identifier) for the current obs. 
+
+        Returns:
+            None   
         """
         log.info('Calculating for {} at ({}, {})'.format(target_name, ra_deg, dec_deg))
         # Calculate beam radius (TODO: generalise for other antennas besides MeerKAT):
@@ -150,6 +175,17 @@ class TargetsMinimal(object):
 
     def format_targets(self, df, pointing_dict):
         """Formats dataframe target list into JSON list of dict for storing in Redis. 
+        
+        Args:
+            df (dataframe): Dataframe of target list for the current pointing.
+            pointing_dict (dict): Dictionary containing the name of the 
+            primary pointing and its coordinates.
+
+        Returns:
+            json_list (JSON): JSON-formatted dictionary containing the targets
+            in the current field of view. The structure is as follows:
+            `[{primary_pointing, primary_ra, primary_dec}, {source_id_0, ra, 
+            dec}, {source_id_1, ra, dec}, ... ]`
         """ 
         output_list = [pointing_dict]
         df = df.to_numpy()
