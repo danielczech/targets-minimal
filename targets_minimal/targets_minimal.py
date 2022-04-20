@@ -41,6 +41,18 @@ class TargetsMinimal(object):
 
     def __init__(self, redis_endpoint, pointing_channel, targets_channel, config_file):
         """Initialise the minimal target selector. 
+
+        Args:
+            redis_endpoint (str): Redis endpoint (of the form <host IP
+            address>:<port>) 
+            pointing_channel (str): Name of the channel from which the minimal
+            target selector will receive new pointing information.  
+            targets_channel (str): Name of the channel to which the minimal 
+            target selector will publish target information.  
+            config_file (str): Location of the database config file (yml).
+
+        Returns:
+            None
         """
         log.info('Initialising the minimal target selector')
         redis_host, redis_port = redis_endpoint.split(':')
@@ -63,6 +75,12 @@ class TargetsMinimal(object):
 
     def configure_db(self, config_file):
         """Configure access to the database of sources.
+
+        Args:
+            config_file (str): File path to the .yml DB configuration file. 
+
+        Returns:
+            None
         """
         cfg = self.read_config_file(config_file)
         url = URL(**cfg)
