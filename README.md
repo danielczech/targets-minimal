@@ -39,9 +39,8 @@ Upon receiving this message, the target selector does the following:
 
 **Things to note:**  
 
-1. Due to time limitations, I have not yet written full documentation of all the functions in the code. I will do so on 2022-04-19. 
-2. `source_id` is the Gaia source ID of the particular star within the current field of view (most don't have a name beyond this).  
-3. The minimal target selector does not take into account prior observations. 
+1. `source_id` is the Gaia source ID of the particular star within the current field of view (most don't have a name beyond this).  
+2. The minimal target selector does not take into account prior observations. 
 
 **Daemonisation:**  
 
