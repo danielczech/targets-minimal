@@ -1,9 +1,13 @@
 import argparse 
 import sys
 
-from .targets_minimal import TargetsMinimal
-from .logger import log, set_logger
-
+try:
+    from .targets_minimal import TargetsMinimal
+    from .logger import log, set_logger
+except ImportError:
+    from targets_minimal import TargetsMinimal
+    from logger import log, set_logger
+    
 def cli(args = sys.argv[0]):
     """Command line interface for the automator. 
     """

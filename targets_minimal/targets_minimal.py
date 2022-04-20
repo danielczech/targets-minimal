@@ -8,7 +8,10 @@ import numpy as np
 import json
 import time
 
-from .logger import log
+try:
+    from .logger import log
+except ImportError:
+    from logger import log
 
 class TargetsMinimal(object):
     """A minimal implementation of the target selector.
