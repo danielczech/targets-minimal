@@ -50,12 +50,15 @@ Logging: `/var/log/bluse/targets_minimal/targets_minimal.err`
 Starting via circus: `circusctl --endpoint tcp://10.98.81.254:5555 start targets_minimal`  
 
 Example:  
-```circusctl --endpoint tcp://10.98.81.254:5555 start targets_minimal
+```
+circusctl --endpoint tcp://10.98.81.254:5555 start targets_minimal
   
 [2022-04-20 12:44:55,714 - INFO - targets_minimal.py:23] Initialising the minimal target selector
 [2022-04-20 12:44:55,774 - INFO - targets_minimal.py:35] Starting minmial target selector.
 [2022-04-20 12:44:55,774 - INFO - targets_minimal.py:36] Listening for new pointings on Redis channel: target-selector:new-pointing  
-
+```
+  
+```
 redis-cli publish target-selector:new-pointing test_array:test_src_name:41.44:60.52:1284000000:test_obsid  
     
 [2022-04-20 13:21:50,652 - INFO - targets_minimal.py:92] Calculating for test_src_name at (40.44, 60.52)
