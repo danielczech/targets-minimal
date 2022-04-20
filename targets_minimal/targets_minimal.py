@@ -14,7 +14,29 @@ except ImportError:
     from logger import log
 
 class TargetsMinimal(object):
-    """A minimal implementation of the target selector.
+    """A minimal implementation of the target selector. It functions as follows:
+
+       1. Subscribes to the `pointing_channel` - the Redis pub/sub channel to 
+          which new pointings are to be published. These messages must be 
+          formatted as follows:
+          `<subarray name>:<target name>:<RA>:<Dec>:<FECENTER>:<OBSID>`
+          RA and Dec should be in degrees, while `FECENTER` should be in Hz.
+
+       2. When a new pointing message is received, the radius of the primary 
+          beam is estimated using `FECENTER`. 
+
+       3. Retrieves the list of targets available within the primary field of 
+          view from the primary star database.
+
+       4. Formats the list into a list of dictionaries:
+          `[{source_id, ra, dec}, {source_id, ra, dec}, ... ]`
+          Details of the primary pointing are included as follows:
+          `{primary_pointing, primary_ra, primary_dec}`
+
+       5. This list is JSON-formatted and saved in Redis under the key:
+          `targets:<OBSID>`
+
+       6. The key is published to the `targets_channel`. 
     """
 
     def __init__(self, redis_endpoint, pointing_channel, targets_channel, config_file):
