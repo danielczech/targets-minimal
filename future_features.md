@@ -43,7 +43,7 @@ these into Redis under the following keys respectively: `all_targets:<OBSID>`,
 parameters, and for the optimal beam placement parameters. 
 
 8. Publish an alert (`targets:<OBSID>`) to the Redis channel for new targets 
-(`targets`). 
+(`target-selector:targets`). 
   
 **Observation/processing completed:**   
   
@@ -68,3 +68,18 @@ band would be ranked higher than others. If available sources have already
 been observed in a different frequency band than the current observation,
 they would rank lower, but still above sources that have been observed in all 
 available bands. 
+
+**Redis Reference:**  
+
+|Channel                       |Action |Messages                                                                 |Message Description              |
+|------------------------------|-------|-------------------------------------------------------------------------|---------------------------------|
+|`target-selector:new-pointing`|listen |`<subarray name>:<target name>:<RA (deg)>:<Dec (deg)>:<FECENTER>:<OBSID>`|New primary pointing message.    |
+|`target-selector:completed`   |listen |`<OBSID>:<Gaia source ID>:<RA>:<Dec>:<freq. band>:<antennas>:<recording duration>` | Processing complete for a specific target for a specific segment of the full band. |
+|`target-selector:targets`     |publish|`targets:<OBSID>`                                                        |Indicates that new targets are available. |
+
+|Key                      |Description                                                                                                           |
+|-------------------------|----------------------------------------------------------------------------------------------------------------------|
+|`all_targets:<OBSID>`    |All sources within the primary field of view, including those already observed. JSON-formatted dictionary.            | 
+|`unseen_targets:<OBSID>` |All unobserved sources (in the current band) within the primary field of view. JSON-formatted dictionary.             |
+|`ranked_targets:<OBSID>` |All unobserved sources (in the current band), ranked by priority score. JSON-formatted dict. Incl. priority algorithm.|
+|`beam_placement:<OBSID>` |Optimal beam placement to cover the most unobserved sources. JSON-formatted dict. Incl. beam placement parameters.    |
