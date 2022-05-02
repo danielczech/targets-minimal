@@ -71,7 +71,7 @@ Install via `python3.9 setup.py install` into the virtual environment selected.
   
 **To Do:**   
 
-- See `targets-minimal/full_features.md` for the full `target-selector` and what features need to be implemented. 
+- See the [full feature requirements](/targets-minimal/full_features.md) for the full `target-selector` and what features need to be implemented. 
 
 - A more nuanced calculation of the radius of the primary field of view would be useful. For example, 
 it may be preferable to consider the highest frequency of the band instead of the centre frequency in 
