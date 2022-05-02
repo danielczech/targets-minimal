@@ -35,13 +35,14 @@ same frequency band **and** ranked by priority score.
 target list, ad-hoc sources, etc) and, based on priority score, determine the 
 optimal beam placement.  
 
-6. Place all of the above lists into a JSON-formatted dictionary, and write 
-this dictionary into Redis under the key `targets:<OBSID>`. 
+6. Place all of the above lists into separate JSON-formatted dictionaries, and write 
+these into Redis under the following keys respectively: `all_targets:<OBSID>`, 
+`unseen_targets:<OBSID>`, `ranked_targets:<OBSID>` and `beam_placement:<OBSID>`.
 
-7. This dictionary is to include a field for the priority algorithm and 
-parameters, and another for the optimal beam placement parameters. 
+7. Dictionaries 4 and 5 are to include respectively a field for the priority algorithm and 
+parameters, and for the optimal beam placement parameters. 
 
-8. Publish the above key (`targets:<OBSID>`) to the Redis channel for new targets 
+8. Publish an alert (`targets:<OBSID>`) to the Redis channel for new targets 
 (`targets`). 
   
 **Observation/processing completed:**   
