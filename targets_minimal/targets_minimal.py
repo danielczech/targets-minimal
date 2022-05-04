@@ -112,7 +112,11 @@ class TargetsMinimal(object):
 
         Expects a message of the form:
 
-        `<subarray name>:<target name>:<RA (deg)>:<Dec (deg)>:<FECENTER>:<OBSID>`
+        `<OBSID>:<target name>:<RA (deg)>:<Dec (deg)>:<FECENTER>`
+
+        Note that OBSID must be constructed as follows:
+
+        `<telescope name>:<subarray name>:<PKTSTART timestamp>`
  
         Args:
             msg (str): The incoming message from the `pointing_channel`. 
@@ -124,13 +128,15 @@ class TargetsMinimal(object):
         log.info(msg_data)
         msg_components = msg_data.split(':')
         # Basic checks of incoming message
-        if(len(msg_components) == 6):
-            subarray = msg_components[0]       
-            target_name = msg_components[1]       
-            ra_deg = float(msg_components[2])       
-            dec_deg = float(msg_components[3])
-            fecenter = float(msg_components[4])
-            obsid = msg_components[5]
+        if(len(msg_components) == 7):
+            telescope_name = msg_components[0]       
+            subarray = msg_components[1]       
+            pktstart_ts = msg_components[2]       
+            target_name = msg_components[3]       
+            ra_deg = float(msg_components[4])       
+            dec_deg = float(msg_components[5])
+            fecenter = float(msg_components[6])
+            obsid = '{}:{}:{}'.format(telescope_name, subarray, pktstart_ts)
             self.calculate_targets(subarray, target_name, ra_deg, dec_deg, fecenter, obsid)
         else:
             log.warning('Unrecognised message: {}'.format(msg_data))
