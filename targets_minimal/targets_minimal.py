@@ -174,7 +174,7 @@ class TargetsMinimal(object):
         target_list = pd.read_sql(targets_query, con=self.connection)
         end_ts = time.time()
         log.info('Retrieved {} targets in field of view in {} seconds'.format(target_list.shape[0], int(end_ts - start_ts)))
-        pointing_dict = {'primary_pointing':target_name, 'primary_ra':ra_deg, 'primary_dec':dec_deg}
+        pointing_dict = {'source_id':target_name, 'ra':ra_deg, 'dec':dec_deg}
         json_list = self.format_targets(target_list, pointing_dict)
         # Write the list of targets to Redis under OBSID and alert listeners
         # that new targets are available:
