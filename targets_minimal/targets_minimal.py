@@ -155,7 +155,9 @@ class TargetsMinimal(object):
             dec_deg (float): As above, Dec in degrees. 
             fecenter (float): The centre frequency of the current observation.
             (TODO: more nuanced estimate of field of view).
-            obsid (str): `OBSID` (unique identifier) for the current obs. 
+            obsid (str): `OBSID` (unique identifier) for the current obs. Note
+            that `OBSID` is of the form:
+            `<telescope name>:<subarray name>:<PKTSTART timestamp>`
 
         Returns:
             None   
