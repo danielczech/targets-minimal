@@ -20,7 +20,7 @@ class TargetsMinimal(object):
           which new pointings are to be published. These messages must be 
           formatted as follows:
           `<subarray name>:<target name>:<RA>:<Dec>:<FECENTER>:<OBSID>`
-          RA and Dec should be in degrees, while `FECENTER` should be in Hz.
+          RA and Dec should be in degrees, while `FECENTER` should be in MHz.
 
        2. When a new pointing message is received, the radius of the primary 
           beam is estimated using `FECENTER`. 
@@ -112,7 +112,7 @@ class TargetsMinimal(object):
 
         Expects a message of the form:
 
-        `<OBSID>:<target name>:<RA (deg)>:<Dec (deg)>:<FECENTER>`
+        `<OBSID>:<target name>:<RA (deg)>:<Dec (deg)>:<FECENTER (MHz)>`
 
         Note that OBSID must be constructed as follows:
 
@@ -153,7 +153,8 @@ class TargetsMinimal(object):
             J2000 coordinates should be used if the original 26M Gaia 
             DR2-derived star list is used.
             dec_deg (float): As above, Dec in degrees. 
-            fecenter (float): The centre frequency of the current observation.
+            fecenter (float): The centre frequency of the current observation,
+            in MHz.
             (TODO: more nuanced estimate of field of view).
             obsid (str): `OBSID` (unique identifier) for the current obs. Note
             that `OBSID` is of the form:
@@ -164,7 +165,7 @@ class TargetsMinimal(object):
         """
         log.info('Calculating for {} at ({}, {})'.format(target_name, ra_deg, dec_deg))
         # Calculate beam radius (TODO: generalise for other antennas besides MeerKAT):
-        beam_radius = 0.5*(constants.c/fecenter)/13.5         
+        beam_radius = 0.5*(constants.c/fecenter*10e6)/13.5         
         targets_query = """
                         SELECT `source_id`, `ra`, `dec`, `dist_c`
                         FROM target_list
