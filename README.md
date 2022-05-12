@@ -25,22 +25,27 @@ optional arguments:
 
 This minimimal target selector provides the coordinates of stars within the current field of view.  
 When a new source is tracked by the `coordinator`, the following message should be sent to the 
-`pointing_channel` (at the same time as `PKTSTART`):
+`pointing_channel` (in the case of BLUSE, `target-selector:new-pointing`) at the same time as `PKTSTART`:
 
-`<subarray name>:<target name>:<RA (deg)>:<Dec (deg)>:<FECENTER>:<OBSID>`
+`<telescope name>:<subarray name>:<obs timestamp calculated from PKTSTART>:<target name>:<RA (deg)>:<Dec (deg)>:<FECENTER>`  
+
+Collectively, `<telescope name>:<subarray name>:<obs timestamp calculated from PKTSTART>` is 
+also referred to as `OBSID` in the status buffers of the processing nodes.
 
 Upon receiving this message, the target selector does the following:  
 
 1. Calculates an estimate of the radius of the primary beam at frequency `FECENTER`.  
 2. Retrieves the list of targets available within the primary field of view from the primary star database.  
-3. Formats the list into a list of dictionaries: `[{primary_pointing, primary_ra, primary_dec}, {source_id_0, ra, dec}, {source_id_1, ra, dec}, ... ]`
+3. Formats the list into a list of dictionaries: `[{source_id_0, ra, dec}, {source_id_1, ra, dec}, ... ]`
+ (Note that the first source in the list is the primary pointing). 
 4. Saves this list in the JSON format in Redis under the key given by `OBSID`.
-5. Publishes a message: `<subarray name>:<OBSID>` to the `targets` Redis channel.
+5. Publishes a message: `targets:<OBSID>` to the `targets` Redis channel (`target-selector:targets` in the case of BLUSE).
+Note that `<OBSID>` is made up as follows: `<telescope name>:<subarray name>:<obs timestamp calculated from PKTSTART>`.
 
 **Things to note:**  
 
-1. `source_id` is the Gaia source ID of the particular star within the current field of view (most don't have a name beyond this).  
-2. The minimal target selector does not take into account prior observations. 
+1. `source_id` is the name or Gaia source ID for the target for beamforming.  
+2. This minimal target selector does not take into account prior observations. 
 
 **Daemonisation:**  
 
