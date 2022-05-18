@@ -2,25 +2,6 @@
 
 Provides basic target selection capabilities. 
 
-**Usage:**  
-
-```
-usage: /opt/virtualenv/bluse3.9/bin/targets_minimal [options]
-
-Start the Commensal Automator
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --redis_endpoint REDIS_ENDPOINT
-                        Local Redis endpoint
-  --pointing_channel POINTING_CHANNEL
-                        Name of the channel from which information about new pointings will be received.
-  --targets_channel TARGETS_CHANNEL
-                        Name of the channel to which targets information will be published.
-  --config_file CONFIG_FILE
-                        Database configuration file.
-```      
-
 **Redis interfacing:**
 
 This minimimal target selector provides the coordinates of stars within the current field of view.  
@@ -42,10 +23,29 @@ Upon receiving this message, the target selector does the following:
 5. Publishes a message: `targets:<OBSID>` to the `targets` Redis channel (`target-selector:targets` in the case of BLUSE).
 Note that `<OBSID>` is made up as follows: `<telescope name>:<subarray name>:<obs timestamp calculated from PKTSTART>`.
 
+**Usage:**  
+
+```
+usage: /opt/virtualenv/bluse3.9/bin/targets_minimal [options]
+
+Start the Commensal Automator
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --redis_endpoint REDIS_ENDPOINT
+                        Local Redis endpoint
+  --pointing_channel POINTING_CHANNEL
+                        Name of the channel from which information about new pointings will be received.
+  --targets_channel TARGETS_CHANNEL
+                        Name of the channel to which targets information will be published.
+  --config_file CONFIG_FILE
+                        Database configuration file.
+```      
+
 **Things to note:**  
 
 1. `source_id` is the name or Gaia source ID for the target for beamforming.  
-2. This minimal target selector does not take into account prior observations. 
+2. This minimal target selector does not take into account prior observations (so far). 
 
 **Daemonisation:**  
 
@@ -63,10 +63,10 @@ circusctl --endpoint tcp://10.98.81.254:5555 start targets_minimal
 ```
   
 ```
-redis-cli publish target-selector:new-pointing test_array:test_src_name:41.44:60.52:1284000000:test_obsid  
+redis-cli publish target-selector:new-pointing MeerKAT:array_1:20220513T043602Z:J1939-0+15:294.85429166666665:-63.46266666666667:1284  
     
-[2022-04-20 13:21:50,652 - INFO - targets_minimal.py:92] Calculating for test_src_name at (40.44, 60.52)
-[2022-04-20 13:22:33,686 - INFO - targets_minimal.py:103] Retrieved 910 targets in field of view in 43 seconds
+[2022-05-18 15:51:43,141 - INFO - targets_minimal.py:165] Calculating for J1939-0+15 at (294.85429166666665, -63.46266666666667)
+[2022-05-18 15:52:26,384 - INFO - targets_minimal.py:176] Retrieved 634 targets in field of view in 43 seconds
 ```
 
 **Installation:**  
