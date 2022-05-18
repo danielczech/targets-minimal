@@ -125,10 +125,10 @@ class TargetsMinimal(object):
             None
         """
         msg_data = msg['data']
-        log.info(msg_data)
         msg_components = msg_data.split(':')
         # Basic checks of incoming message
         if(len(msg_components) == 7):
+            log.info('Processing message: {}'.format(msg_data))
             telescope_name = msg_components[0]       
             subarray = msg_components[1]       
             pktstart_ts = msg_components[2]       
@@ -165,7 +165,7 @@ class TargetsMinimal(object):
         """
         log.info('Calculating for {} at ({}, {})'.format(target_name, ra_deg, dec_deg))
         # Calculate beam radius (TODO: generalise for other antennas besides MeerKAT):
-        beam_radius = 0.5*(constants.c/fecenter*10e6)/13.5         
+        beam_radius = 0.5*(constants.c/(fecenter*1e6))/13.5         
         targets_query = """
                         SELECT `source_id`, `ra`, `dec`, `dist_c`
                         FROM target_list
