@@ -140,6 +140,67 @@ class TargetsMinimal(object):
             self.calculate_targets(subarray, target_name, ra_deg, dec_deg, fecenter, obsid)
         else:
             log.warning('Unrecognised message: {}'.format(msg_data))
+
+    def query_bounds(self, ra, dec, r):
+        """Calculate bounds of a rectangular box encompassing the current 
+        field of view. 
+
+        See also:
+            https://github.com/UCBerkeleySETI/target-selector
+            http://janmatuschek.de/LatitudeLongitudeBoundingCoordinates#PolesAnd180thMeridian
+
+        Allows fast retrieval of a smaller subset of the full 
+        target list, from which sources in the current field of view can be
+        retrieved.  
+
+        Assumes r < pi/2
+
+        Args:        
+            ra (float): RA in radians of the primary pointing target. 
+            J2000 coordinates should be used if the original 26M Gaia 
+            DR2-derived star list is used.
+            dec (float): As above, Dec in radians. 
+            r (float): Angular radius of field of view in radians. 
+
+        Returns:
+            bounds (list): Coordinates of corners of a bounding box
+            encompassing the current field of view, in radians.
+            Note: returns two bounding boxes if the bounding box 
+            overlaps 0 deg RA. 
+        """
+        if((dec + r) >= np.pi/2):
+           dec_max = np.pi/2
+           dec_min = dec - r 
+           ra_min = 0
+           ra_max = 2*np.pi
+        elif((dec - r) <= -np.pi/2.0):
+           dec_min = np.pi/2
+           dec_max = dec + r 
+           ra_min = 0
+           ra_max = 2*np.pi
+        else:
+           dec_min = dec - r
+           dec_max = dec + r
+           ra_off = np.arcsin(np.sin(r)/np.cos(dec))
+           ra_min = ra - ra_off
+           ra_max = ra + ra_off
+           if(ra_min < 0):
+               ra_min_0 = 2*np.pi - ra_min
+               ra_max_0 = 0
+               ra_min_1 = 0
+               ra_max_1 = ra_max
+               bounds = [[ra_min_0, ra_max_0, dec_min, dec_max], 
+                         [ra_min_1, ra_max_1, dec_min, dec_max]]
+           elif(ra_max > 2*pi):
+               ra_min_0 = ra_min
+               ra_max_0 = 2*np.pi
+               ra_min_1 = 0
+               ra_max_1 = ra_max - 2*np.pi
+               bounds = [[ra_min_0, ra_max_0, dec_min, dec_max], 
+                         [ra_min_1, ra_max_1, dec_min, dec_max]]
+           else:
+               bounds = [[ra_min, ra_max, dec_min, dec_max]]
+        return bounds
  
     def calculate_targets(self, subarray, target_name, ra_deg, dec_deg, fecenter, obsid):
         """Calculates and communicates targets within the current field of view
