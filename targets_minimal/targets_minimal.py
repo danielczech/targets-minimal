@@ -191,7 +191,7 @@ class TargetsMinimal(object):
                ra_max_1 = ra_max
                bounds = [[ra_min_0, ra_max_0, dec_min, dec_max], 
                          [ra_min_1, ra_max_1, dec_min, dec_max]]
-           elif(ra_max > 2*pi):
+           elif(ra_max > 2*np.pi):
                ra_min_0 = ra_min
                ra_max_0 = 2*np.pi
                ra_min_1 = 0
@@ -227,11 +227,36 @@ class TargetsMinimal(object):
         log.info('Calculating for {} at ({}, {})'.format(target_name, ra_deg, dec_deg))
         # Calculate beam radius (TODO: generalise for other antennas besides MeerKAT):
         beam_radius = 0.5*(constants.c/(fecenter*1e6))/13.5         
-        targets_query = """
+        log.info('Applying bounding box.')
+        bounds = self.query_bounds(np.deg2rad(ra_deg), np.deg2rad(dec_deg), beam_radius)
+        # Building SQL query:
+        if(len(bounds) > 1):
+            box_1 = np.rad2deg(bounds[0])
+            box_2 = np.rad2deg(bounds[1])
+            box_query = """ 
                         SELECT `source_id`, `ra`, `dec`, `dist_c`
                         FROM target_list
+                        WHERE ((`ra` > {} AND `ra` < {}) OR (`ra` > {} AND `ra` < {}))
+                        AND (`dec` > {} AND `dec` < {})
+                        """.format(box_1[0], box_1[1], box_2[0], box_2[1], box_1[2], box_1[3])
+        elif(len(bounds) == 1):      
+            box = np.rad2deg(bounds[0])
+            box_query = """ 
+                        SELECT `source_id`, `ra`, `dec`, `dist_c`
+                        FROM target_list
+                        WHERE (`ra` > {} AND `ra` < {})
+                        AND (`dec` > {} AND `dec` < {})
+                        """.format(box[0], box[1], box[2], box[3])
+        else:
+            box_query = """
+                        SELECT `source_id`, `ra`, `dec`, `dist_c`
+                        FROM target_list
+                        """
+        targets_query = """
+                        SELECT *
+                        FROM ({}) as T
                         WHERE ACOS(SIN(RADIANS(`dec`))*SIN({})+COS(RADIANS(`dec`))*COS({})*COS({}-RADIANS(`ra`)))<{};
-                        """.format(np.deg2rad(dec_deg), np.deg2rad(dec_deg), np.deg2rad(ra_deg), beam_radius)
+                        """.format(box_query, np.deg2rad(dec_deg), np.deg2rad(dec_deg), np.deg2rad(ra_deg), beam_radius)
         start_ts = time.time()
         target_list = pd.read_sql(targets_query, con=self.connection)
         end_ts = time.time()
