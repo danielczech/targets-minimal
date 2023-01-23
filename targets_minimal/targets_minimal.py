@@ -13,6 +13,8 @@ try:
 except ImportError:
     from logger import log
 
+DELAY = 75 # seconds
+
 class TargetsMinimal(object):
     """A minimal implementation of the target selector. It functions as follows:
 
@@ -62,6 +64,7 @@ class TargetsMinimal(object):
         self.pointing_channel = pointing_channel
         self.targets_channel = targets_channel
         self.configure_db(config_file)
+        self.msg_ts = 0
 
     def start(self):
         """Start the minimal target selector.
@@ -71,6 +74,7 @@ class TargetsMinimal(object):
         ps = self.redis_server.pubsub(ignore_subscribe_messages=True)
         ps.subscribe(self.pointing_channel)
         for msg in ps.listen():
+            self.msg_ts = time.time()
             self.parse_msg(msg)
 
     def configure_db(self, config_file):
@@ -253,10 +257,18 @@ class TargetsMinimal(object):
                         FROM target_list
                         """
         targets_query = """
-                        SELECT *
+                        SELECT `source_id`, `ra`, `dec`, `dist_c`
                         FROM ({}) as T
                         WHERE ACOS(SIN(RADIANS(`dec`))*SIN({})+COS(RADIANS(`dec`))*COS({})*COS({}-RADIANS(`ra`)))<{};
                         """.format(box_query, np.deg2rad(dec_deg), np.deg2rad(dec_deg), np.deg2rad(ra_deg), beam_radius)
+        debug_query = """
+                        SELECT `source_id`, `ra`, `dec`, `dist_c`
+                        FROM ({}) as T
+                      """.format(box_query)
+        start_ts = time.time()
+        target_debug = pd.read_sql(debug_query, con=self.connection)
+        end_ts = time.time()
+        log.info('Debug retrieval {} of view in {} seconds'.format(target_debug.shape[0], int(end_ts - start_ts)))
         start_ts = time.time()
         target_list = pd.read_sql(targets_query, con=self.connection)
         end_ts = time.time()
@@ -266,6 +278,12 @@ class TargetsMinimal(object):
         # Write the list of targets to Redis under OBSID and alert listeners
         # that new targets are available:
         self.redis_server.set('targets:{}'.format(obsid), json_list)
+        # Temporary: Apply delay to ensure 60 + 15 second delay 
+        current_duration = time.time() - self.msg_ts
+        log.info(current_duration)
+        if(current_duration < DELAY):
+            log.info(f'TEMPORARY: sleeping for {DELAY - current_duration} seconds.')
+            time.sleep(DELAY - current_duration)
         self.redis_server.publish(self.targets_channel, 'targets:{}'.format(obsid))
 
     def format_targets(self, df, pointing_dict):
