@@ -37,8 +37,8 @@ def add(sources):
             new_source = Source(source_id=id, ra=ra, decl=dec, dist_c=dist)
             session.add(new_source)
             session.commit()
-    engine.execute('ALTER TABLE breakthrough_db.target_list ADD INDEX idx_ra_decl (ra, decl);')
-    engine.execute('ALTER TABLE breakthrough_db.target_list ADD INDEX idx_decl_ra (decl, ra);')
+    #engine.execute('ALTER TABLE breakthrough_db.target_list ADD INDEX idx_ra_decl (ra, decl);')
+    #engine.execute('ALTER TABLE breakthrough_db.target_list ADD INDEX idx_decl_ra (decl, ra);')
     session.close()
         
 class Source(Base):
