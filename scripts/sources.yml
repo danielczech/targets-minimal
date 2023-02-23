@@ -1,0 +1,17 @@
+# List of sources to add or remove
+
+- source: source_1
+  ra: 45.0
+  dec: 45.0
+  dist: 1000.0
+
+- source: source_2
+  ra: 50.0
+  dec: 50.0
+  dist: 1000.0
+
+- source: source_3
+  ra: 60.0
+  dec: 50.0
+  dist: 1000.0
+  
