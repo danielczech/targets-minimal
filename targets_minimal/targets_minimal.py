@@ -89,7 +89,6 @@ class TargetsMinimal(object):
         cfg = self.read_config_file(config_file)
         url = URL(**cfg)
         self.engine = create_engine(url)
-        self.connection = self.engine.connect()
 
     def read_config_file(self, config_file):
         """Read the database configuration yaml file.
@@ -265,12 +264,13 @@ class TargetsMinimal(object):
                         SELECT `source_id`, `ra`, `dec`, `dist_c`
                         FROM ({}) as T
                       """.format(box_query)
+        #start_ts = time.time()
+        #target_debug = pd.read_sql(debug_query, con=self.connection)
+        #end_ts = time.time()
+        #log.info('Debug retrieval {} of view in {} seconds'.format(target_debug.shape[0], int(end_ts - start_ts)))
         start_ts = time.time()
-        target_debug = pd.read_sql(debug_query, con=self.connection)
-        end_ts = time.time()
-        log.info('Debug retrieval {} of view in {} seconds'.format(target_debug.shape[0], int(end_ts - start_ts)))
-        start_ts = time.time()
-        target_list = pd.read_sql(targets_query, con=self.connection)
+        with self.engine.begin() as connection:
+            target_list = pd.read_sql(targets_query, con=connection)
         end_ts = time.time()
         log.info('Retrieved {} targets in field of view in {} seconds'.format(target_list.shape[0], int(end_ts - start_ts)))
         pointing_dict = {'source_id':target_name, 'ra':ra_deg, 'dec':dec_deg}
