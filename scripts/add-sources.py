@@ -7,7 +7,7 @@ Script to add or remove sources from the initial sql database.
 import argparse
 import sys
 import yaml
-from sqlalchemy import create_engine, inspect, Column, Float
+from sqlalchemy import create_engine, inspect, Column, Float, delete
 from sqlalchemy.types import VARCHAR
 from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import sessionmaker
@@ -30,22 +30,34 @@ def add(sources):
         Session = sessionmaker(bind=engine)
         session = Session()
         for source in source_list:
-            id = source['source']
+            s_id = source['source']
             ra = float(source['ra'])
             dec = float(source['dec'])
             dist = float(source['dist'])
-            new_source = Source(source_id=id, ra=ra, decl=dec, dist_c=dist)
+            new_source = Source(source_id=s_id, ra=ra, decl=dec, dist_c=dist)
             session.add(new_source)
             session.commit()
-    #engine.execute('ALTER TABLE breakthrough_db.target_list ADD INDEX idx_ra_decl (ra, decl);')
-    #engine.execute('ALTER TABLE breakthrough_db.target_list ADD INDEX idx_decl_ra (decl, ra);')
     session.close()
         
+def remove(sources):
+    source_list = read_yml(sources)
+    inputurl = "mysql+pymysql://root:root@localhost/breakthrough_db"
+    engine = create_engine(url=inputurl)
+    if inspect(engine).has_table('target_list'):
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        for source in source_list:
+            print("Deleting 1 of {}".format(len(source_list)))
+            s_id = source['source']
+            session.query(Source).filter_by(source_id=s_id).delete()
+            session.commit()
+    session.close()
+
 class Source(Base):
     __tablename__ = 'target_list'
-    source_id = Column(VARCHAR(45))
-    ra = Column(Float, primary_key=True)
-    decl = Column(Float, primary_key=True)
+    source_id = Column(VARCHAR(45), primary_key=True)
+    ra = Column(Float)
+    decl = Column(Float)
     dist_c = Column(Float)
 
 def cli(args = sys.argv[0]):
