@@ -35,10 +35,10 @@ filepath = "tiny.csv"
 
 insert_targets = (
     "INSERT INTO targets (source_id, ra, decl, dist_c) "
-    "VALUES (%s, %s, %s, %s)"
+    "VALUES (CONCAT('Gaia_', %s), %s, %s, %s)"
 )
 
-insert_scores = "INSERT INTO scores (source_id) VALUES (%s)"
+insert_scores = "INSERT INTO scores (source_id) VALUES (CONCAT('Gaia_', %s))"
 
 with open(filepath, "r") as f:
     reader = csv.reader(f)
