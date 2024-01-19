@@ -18,34 +18,24 @@ print("Creating targets table")
 
 cursor.execute(
     "CREATE TABLE IF NOT EXISTS targets (source_id VARCHAR(255), ra DOUBLE, "
-    "decl DOUBLE, dist_c DOUBLE)"
-    )
-
-print("Creating scores table")
-
-cursor.execute(
-    "CREATE TABLE IF NOT EXISTS scores (source_id VARCHAR(255), "
-    "band VARCHAR(16), uhf INT, l INT, s0 INT, s1 INT, s2 INT, "
+    "decl DOUBLE, dist_c DOUBLE, uhf INT, l INT, s0 INT, s1 INT, s2 INT, "
     "s3 INT, s4 INT)"
     )
 
 print("Populating from Gaia csv")
 
-filepath = "tiny.csv"
+filepath = "main_1e6.csv"
 
 insert_targets = (
-    "INSERT INTO targets (source_id, ra, decl, dist_c) "
-    "VALUES (CONCAT('Gaia_', %s), %s, %s, %s)"
+    "INSERT INTO targets (source_id, ra, decl, dist_c, uhf, l, s0, s1, s2, s3, s4) "
+    "VALUES (CONCAT('Gaia_', %s), %s, %s, %s, 0, 0, 0, 0, 0, 0, 0)"
 )
-
-insert_scores = "INSERT INTO scores (source_id) VALUES (CONCAT('Gaia_', %s))"
 
 with open(filepath, "r") as f:
     reader = csv.reader(f)
     next(reader)
     for row in reader:
         cursor.execute(insert_targets, row)
-        cursor.execute(insert_scores, (row[0],))
 
 connection.commit()
 
