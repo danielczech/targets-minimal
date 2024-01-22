@@ -7,6 +7,7 @@ import mysql.connector
 import yaml
 import scipy.constants as constants
 import json
+import redis
 
 class Triage:
 
@@ -48,19 +49,22 @@ class Triage:
             raise ValueError
 
         cursor = self.connection.cursor()
-        update = (f"UPDATE targets SET {band} = %s WHERE source_id = %s")
+        update = f"UPDATE targets SET {band} = %s WHERE source_id = %s"
         cursor.execute(update, (score, source_id))
         self.connection.commit()
         cursor.close()
 
     def update(self, band, source_id, t, nsegs, nants):
+        # Check input for `band`:
+        if band not in {"uhf", "l", "s0", "s1", "s2", "s3", "s4"}:
+            #log.error("Bad input for `band`")
+            raise ValueError
         new_score = t*nsegs*nants
-        current_score = self.get_score(band, source_id)
-        if current_score:
-            score = current_score + new_score
-        else:
-            score = new_score
-        self.set_score(band, source_id, score)
+        update = f"UPDATE targets SET {band} = {band} + %s WHERE source_id = %s"
+        cursor = self.connection.cursor()
+        cursor.execute(update, (new_score, source_id))
+        self.connection.commit()
+        cursor.close()
 
     def get_targets(self, obsid, n):
         """Get the top <n> targets for a particular obsid.
