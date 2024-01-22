@@ -10,8 +10,12 @@ import json
 
 class Triage:
 
-    def __init__(self, config):
+    def __init__(self, config, redis_endpoint):
         self.connection = self.connect(config)
+        redis_host, redis_port = redis_endpoint.split(':')
+        self.r = redis.StrictRedis(host=redis_host,
+                                   port=redis_port,
+                                   decode_responses=True)
 
     def connect(self, config):
 
@@ -49,7 +53,7 @@ class Triage:
         self.connection.commit()
         cursor.close()
 
-    def update_score(self, band, source_id, t, nsegs, nants):
+    def update(self, band, source_id, t, nsegs, nants):
         new_score = t*nsegs*nants
         current_score = self.get_score(band, source_id)
         if current_score:
@@ -57,6 +61,12 @@ class Triage:
         else:
             score = new_score
         self.set_score(band, source_id, score)
+
+    def get_targets(self, obsid, n):
+        """Get the top <n> targets for a particular obsid.
+        """
+        targets = json.loads(self.r.get(f"targets:{obsid}"))
+        return targets[0:n]
 
     def est_fov(self, d, f):
         """Estimate field of view for cone search. b in metres, f in MHz.
