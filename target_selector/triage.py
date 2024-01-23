@@ -19,10 +19,8 @@ class Triage:
                                    decode_responses=True)
 
     def connect(self, config):
-
         with open("config.yml", "r") as f:
             config = yaml.safe_load(f)
-
         return mysql.connector.connect(**config)
 
     def get_score(self, band, source_id):
@@ -32,7 +30,6 @@ class Triage:
         if band not in {"uhf", "l", "s0", "s1", "s2", "s3", "s4"}:
             #log.error("Bad input for `band`")
             raise ValueError
-
         cursor = self.connection.cursor()
         query = f"SELECT {band} FROM targets WHERE source_id = %s"
         cursor.execute(query, (source_id,))
@@ -47,7 +44,6 @@ class Triage:
         if band not in {"uhf", "l", "s0", "s1", "s2", "s3", "s4"}:
             #log.error("Bad input for `band`")
             raise ValueError
-
         cursor = self.connection.cursor()
         update = f"UPDATE targets SET {band} = %s WHERE source_id = %s"
         cursor.execute(update, (score, source_id))
@@ -72,7 +68,7 @@ class Triage:
         targets = json.loads(self.r.get(f"targets:{obsid}"))
         return targets[0:n]
 
-    def est_fov(self, d, f):
+    def est_fov_generic(self, d, f):
         """Estimate field of view for cone search. b in metres, f in MHz.
         """
         return 0.5*(constants.c/(f*1e6))/d
@@ -81,7 +77,7 @@ class Triage:
         """Cone search query for a given target. ra and dec in radians;
         f in MHz, d in metres.
         """
-        r = self.est_fov(d, f)
+        r = self.est_fov_generic(d, f)
         query = ("SELECT `source_id`, `ra`, `decl` FROM targets "
                  "WHERE ACOS(SIN(RADIANS(`decl`))*SIN(%s)+COS(RADIANS(`decl`))"
                  "*COS(%s)*COS(%s-RADIANS(`ra`)))<%s")
@@ -95,11 +91,9 @@ class Triage:
         if band not in {"uhf", "l", "s0", "s1", "s2", "s3", "s4"}:
             #log.error("Bad input for `band`")
             raise ValueError
-
         sub_query=(f" ORDER BY {band}, (uhf + l + s0 + s1 + s2 + s3 + s4), "
                    "dist_c")
         cone_query, cone_values = self.cone_query(ra, dec, d, f)
-
         cursor = self.connection.cursor()
         cursor.execute(cone_query + sub_query, cone_values)
         targets = cursor.fetchall()
