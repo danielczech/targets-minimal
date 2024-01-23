@@ -6,24 +6,24 @@ requires = [
     'pandas >= 1.4.2',
     'PyYAML >= 6.0',
     'scipy >= 1.8.0',
-    'SQLAlchemy >= 1.4.35'
+    'mysql-connector-python==8.2.0'
     ]
 
 setuptools.setup(
-    name = 'targets_minimal',
+    name = 'target_selector',
     version = '1.0',
     url = 'https://github.com/danielczech/targets-minimal',
     license = 'MIT',
     author = 'Daniel Czech',
     author_email = 'danielc@berkeley.edu',
-    description = 'Minimal target selector for Breakthrough Listen\'s commensal observing',
+    description = 'Target selector for Breakthrough Listen\'s commensal observing',
     packages = [
-        'targets_minimal',
+        'target_selector',
         ],
     install_requires=requires,
     entry_points = {
         'console_scripts':[
-            'targets_minimal = targets_minimal.cli:cli',
+            'targetselector = target_selector.cli:cli',
             ]
         },
     )
