@@ -8,48 +8,25 @@ from target_selector.logger import log
 DELAY = 75 # seconds
 
 class Selector(object):
-    """A minimal implementation of the target selector. It functions as follows:
-
-       1. Subscribes to the `pointing_channel` - the Redis pub/sub channel to
-          which new pointings are to be published. These messages must be
-          formatted as follows:
-          `<subarray name>:<target name>:<RA>:<Dec>:<FECENTER>:<OBSID>`
-          RA and Dec should be in degrees, while `FECENTER` should be in MHz.
-
-       2. When a new pointing message is received, the radius of the primary
-          beam is estimated using `FECENTER`.
-
-       3. Retrieves the list of targets available within the primary field of
-          view from the primary star database.
-
-       4. Formats the list into a list of dictionaries:
-          `[{source_id, ra, dec}, {source_id, ra, dec}, ... ]`
-          Details of the primary pointing are included as follows:
-          `{primary_pointing, primary_ra, primary_dec}`
-
-       5. This list is JSON-formatted and saved in Redis under the key:
-          `targets:<OBSID>`
-
-       6. The key is published to the `targets_channel`.
+    """A target selector class that supplies new target lists for observation,
+    ordered by observing priority. It also responds to observing completion
+    messages, updating the observing priority table accordingly.
     """
 
     def __init__(self, redis_ep, pointings, targets, processing, config, d):
-        """Initialise the minimal target selector. 
+        """Initialises a target selector instance.
 
         Args:
-            redis_ep (str): Redis endpoint (of the form <host IP
-            address>:<port>)
-            pointings (str): Name of the channel from which the minimal
-            target selector will receive new pointing information.
-            targets (str): Name of the channel to which the minimal
-            target selector will publish target information.
-            completed (str): Channels from which the target selector will
-            receive information about completed processing units.
+            redis_ep (str): Redis endpoint (<host IP address>:<port>)
+            pointings (str): Name of the channel from which the target
+            selector will receive new pointing information.
+            targets (str): Name of the channel to which the target selector
+            will publish target information.
+            processing (str): Name of the channel from which the target
+            selector will receive information about completed processing units.
             config (str): Location of the database config file (yml).
-            d (float): diameter of telescope antenna.
-
-        Returns:
-            None
+            d (float): diameter of telescope antenna (used in generic FoV
+            calculation) in meters.
         """
         log.info('Initialising the minimal target selector')
         redis_host, redis_port = redis_ep.split(':')
@@ -95,7 +72,7 @@ class Selector(object):
             log.warning(f"Unrecognised message: {msg_data}")
 
     def update(self, msg):
-        """Process an update message for a completed subband.
+        """Processes an update message for a completed subband.
         """
         try:
             update = json.loads(msg)
@@ -120,7 +97,7 @@ class Selector(object):
         log.info(f"Updated target scores for {obsid}")
 
     def pointing(self, msg):
-        """Process a request for targets in the FoV of a new pointing.
+        """Processes a request for targets in the FoV of a new pointing.
         """
         try:
             pointing = json.loads(msg)

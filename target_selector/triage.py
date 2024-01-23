@@ -1,8 +1,3 @@
-"""
-Connect to the main target list database and rank objects in the field of view
-by observing priority.
-"""
-
 import mysql.connector
 import yaml
 import scipy.constants as constants
@@ -10,6 +5,9 @@ import json
 import redis
 
 class Triage:
+    """Connect to the main target list database and rank objects in the field
+    of view by observing priority.
+    """
 
     def __init__(self, config, redis_endpoint):
         self.connection = self.connect(config)
@@ -19,6 +17,8 @@ class Triage:
                                    decode_responses=True)
 
     def connect(self, config):
+        """Connect to DB.
+        """
         with open("config.yml", "r") as f:
             config = yaml.safe_load(f)
         return mysql.connector.connect(**config)
@@ -51,6 +51,8 @@ class Triage:
         cursor.close()
 
     def update(self, band, source_id, t, nsegs, nants):
+        """Atomic update of scores for specified sources.
+        """
         # Check input for `band`:
         if band not in {"uhf", "l", "s0", "s1", "s2", "s3", "s4"}:
             #log.error("Bad input for `band`")
@@ -98,7 +100,6 @@ class Triage:
         cursor.execute(cone_query + sub_query, cone_values)
         targets = cursor.fetchall()
         cursor.close()
-
         return targets
 
     def format_targets(self, targets, pointing):

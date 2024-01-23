@@ -5,11 +5,11 @@ from target_selector.selector import Selector
 from target_selector.logger import set_logger
 
 def cli(args = sys.argv[0]):
-    """Command line interface for the automator.
+    """Command line interface for the target selector.
     """
     usage = '{} [options]'.format(args)
-    description = 'Start the Commensal Automator'
-    parser = argparse.ArgumentParser(prog = 'automator',
+    description = 'Target selector for commensal beamforming searches.'
+    parser = argparse.ArgumentParser(prog = 'targetselector',
                                      usage = usage,
                                      description = description)
     parser.add_argument('--redis_endpoint',
@@ -19,15 +19,15 @@ def cli(args = sys.argv[0]):
     parser.add_argument('--pointing_channel',
                         type = str,
                         default = 'target-selector:pointings',
-                        help = 'Name of the channel from which information about new pointings will be received.')
+                        help = 'Channel from which new pointings will be received.')
     parser.add_argument('--targets_channel',
                         type = str,
                         default = 'target-selector:targets',
-                        help = 'Name of the channel to which targets information will be published.')
+                        help = 'Channel to which targets will be published.')
     parser.add_argument('--processing_channel',
                         type = str,
                         default = 'target-selector:processing',
-                        help = 'Name of the channel to which targets information will be published.')
+                        help = 'Channel from which processing messages will be received.')
     parser.add_argument('--config',
                         type = str,
                         default = 'config.yml',
@@ -51,16 +51,16 @@ def main(redis_endpoint, pointing_chan, targets_chan, proc_chan, config, d):
     """Starts the minimal target selector.
 
     Args:
-        redis_endpoint (str): Redis endpoint (of the form <host IP
-        address>:<port>)
-        pointing_channel (str): Name of the channel from which the minimal target
-        selector will receive new pointing information.
-        targets_channel (str): Name of the channel to which the minimal target
-        selector will publish target information.
+        redis_endpoint (str): Redis endpoint (< host IP address>:<port>)
+        pointing_chan (str): Channel from which the target selector will
+        receive new pointing information.
+        targets_chan (str): Channel to which the target selector will publish
+        new target information.
+        proc_chan (str): Channel from which the target selector will receive
+        information about completed processing segments.
         config_file (str): Location of the database config file (yml).
-
-    Returns:
-        None
+        d (float): diameter of telescope antenna (used in generic FoV
+        calculation) in meters.
     """
     set_logger('DEBUG')
     TargetSelector = Selector(redis_endpoint, pointing_chan, targets_chan,
