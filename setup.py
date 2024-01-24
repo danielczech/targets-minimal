@@ -3,7 +3,6 @@ import setuptools
 requires = [
     'numpy >= 1.18.1',
     'redis >= 3.4.1',
-    'pandas >= 1.4.2',
     'PyYAML >= 6.0',
     'scipy >= 1.8.0',
     'mysql-connector-python==8.2.0'
