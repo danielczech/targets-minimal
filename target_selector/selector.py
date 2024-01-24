@@ -28,7 +28,6 @@ class Selector(object):
             d (float): diameter of telescope antenna (used in generic FoV
             calculation) in meters.
         """
-        log.info('Initialising the minimal target selector')
         redis_host, redis_port = redis_ep.split(':')
         self.redis_server = redis.StrictRedis(host=redis_host, 
                                               port=redis_port, 
@@ -41,9 +40,9 @@ class Selector(object):
         self.d = d
 
     def start(self):
-        """Start the minimal target selector.
+        """Start the target selector.
         """
-        log.info('Starting minmial target selector.')
+        log.info('Starting the target selector.')
         ps = self.redis_server.pubsub(ignore_subscribe_messages=True)
         ps.subscribe(self.pointing_channel)
         log.info(f"Listening for new pointings on: {self.pointing_channel}")
