@@ -4,6 +4,8 @@ import scipy.constants as constants
 import json
 import redis
 
+from target_selector.logger import log
+
 class Triage:
     """Connect to the main target list database and rank objects in the field
     of view by observing priority.
@@ -15,6 +17,7 @@ class Triage:
         self.r = redis.StrictRedis(host=redis_host,
                                    port=redis_port,
                                    decode_responses=True)
+        self.valid_bands = {"uhf", "l", "s0", "s1", "s2", "s3", "s4"}
 
     def connect(self, config):
         """Connect to DB.
@@ -27,8 +30,8 @@ class Triage:
         """Get existing score.
         """
         # Check input for `band`:
-        if band not in {"uhf", "l", "s0", "s1", "s2", "s3", "s4"}:
-            #log.error("Bad input for `band`")
+        if band not in self.valid_bands:
+            log.error("Bad input for `band`")
             raise ValueError
         cursor = self.connection.cursor()
         query = f"SELECT {band} FROM targets WHERE source_id = %s"
@@ -41,8 +44,8 @@ class Triage:
         """Set score in table.
         """
         # Check input for `band`:
-        if band not in {"uhf", "l", "s0", "s1", "s2", "s3", "s4"}:
-            #log.error("Bad input for `band`")
+        if band not in self.valid_bands:
+            log.error("Bad input for `band`")
             raise ValueError
         cursor = self.connection.cursor()
         update = f"UPDATE targets SET {band} = %s WHERE source_id = %s"
@@ -54,8 +57,8 @@ class Triage:
         """Atomic update of scores for specified sources.
         """
         # Check input for `band`:
-        if band not in {"uhf", "l", "s0", "s1", "s2", "s3", "s4"}:
-            #log.error("Bad input for `band`")
+        if band not in self.valid_bands:
+            log.error("Bad input for `band`")
             raise ValueError
         new_score = t*nsegs*nants
         update = f"UPDATE targets SET {band} = {band} + %s WHERE source_id = %s"
@@ -90,11 +93,11 @@ class Triage:
         """Triage sources within search area
         """
         # Check input for `band`:
-        if band not in {"uhf", "l", "s0", "s1", "s2", "s3", "s4"}:
-            #log.error("Bad input for `band`")
+        if band not in self.valid_bands:
+            log.error("Bad input for `band`")
             raise ValueError
-        sub_query=(f" ORDER BY {band}, (uhf + l + s0 + s1 + s2 + s3 + s4), "
-                   "dist_c")
+        other_bands = "+".join({band}^self.valid_bands)
+        sub_query = f" ORDER BY {band}, ({other_bands}), dist_c"
         cone_query, cone_values = self.cone_query(ra, dec, d, f)
         cursor = self.connection.cursor()
         cursor.execute(cone_query + sub_query, cone_values)
