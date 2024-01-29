@@ -17,7 +17,7 @@ class Triage:
         self.r = redis.StrictRedis(host=redis_host,
                                    port=redis_port,
                                    decode_responses=True)
-        self.valid_bands = {"uhf", "l", "s0", "s1", "s2", "s3", "s4"}
+        self.valid_bands = {"u", "l", "s0", "s1", "s2", "s3", "s4"}
 
     def connect(self, config):
         """Connect to DB.
