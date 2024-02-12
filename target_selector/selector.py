@@ -106,13 +106,13 @@ class Selector(object):
         try:
             telescope = pointing["telescope"]
             array = pointing["array"]
-            pktstart_ts = pointing["pktstart_ts"]
+            pktstart_str = pointing["pktstart_str"]
             target = pointing["target"]
             ra_deg = pointing["ra_deg"]
             dec_deg = pointing["dec_deg"]
             f_max = pointing["f_max"]
             band = pointing["band"]
-            obsid = f"{telescope}:{array}:{pktstart_ts}"
+            obsid = f"{telescope}:{array}:{pktstart_str}"
         except KeyError as e:
             log.error(f"Missing key: {e}")
             return
@@ -135,6 +135,7 @@ class Selector(object):
             log.info(f'TEMPORARY: sleeping for {DELAY - current_duration} seconds.')
             time.sleep(DELAY - current_duration)
         self.redis_server.publish(self.targets_channel, f"targets:{obsid}")
+        log.info(f"Published {obsid} to {self.targets_channel}")
 
 
 
