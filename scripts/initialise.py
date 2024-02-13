@@ -8,7 +8,7 @@ import yaml
 
 print("Loading config file")
 
-with open("config.yml", "r") as f:
+with open("../config.yml", "r") as f:
     config = yaml.safe_load(f)
 
 connection = mysql.connector.connect(**config)
@@ -24,7 +24,7 @@ cursor.execute(
 
 print("Populating from Gaia csv")
 
-filepath = "main_1e6.csv"
+filepath = "gaia_targets_complete.csv"
 
 insert_targets = (
     "INSERT INTO targets (source_id, ra, decl, dist_c, uhf, l, s0, s1, s2, s3, s4) "

@@ -1,5 +1,4 @@
-mysql:
-  database: breakthrough_db
-  host: <host>
-  password: <pw>
-  username: <user>
+database: breakthrough_db
+host: localhost
+password: bluse42
+username: root

@@ -22,7 +22,7 @@ class Triage:
     def connect(self, config):
         """Connect to DB.
         """
-        with open("config.yml", "r") as f:
+        with open(config, "r") as f:
             config = yaml.safe_load(f)
         return mysql.connector.connect(**config)
 
