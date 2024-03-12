@@ -1,4 +1,5 @@
 import mysql.connector
+from mysql.connector.errors import OperationalError
 import yaml
 import scipy.constants as constants
 import json
@@ -61,12 +62,14 @@ class Triage:
         if band not in self.valid_bands:
             log.error("Bad input for `band`")
             raise ValueError
-        new_score = t*nsegs*nants
+        delta_score = t*nsegs*nants
         update = f"UPDATE targets SET {band} = {band} + %s WHERE source_id = %s"
-        cursor = self.connection.cursor()
-        cursor.execute(update, (new_score, source_id))
-        self.connection.commit()
-        cursor.close()
+
+        with self.connection.cursor() as cursor:
+        #cursor = self.connection.cursor()
+            cursor.execute(update, (delta_score, source_id))
+            self.connection.commit()
+        #cursor.close()
 
     def get_targets(self, obsid, n):
         """Get the top <n> targets for a particular obsid.
@@ -100,10 +103,16 @@ class Triage:
         other_bands = "+".join({band}^self.valid_bands)
         sub_query = f" ORDER BY {band}, ({other_bands}), dist_c"
         cone_query, cone_values = self.cone_query(ra, dec, d, f)
-        cursor = self.connection.cursor()
-        cursor.execute(cone_query + sub_query, cone_values)
-        targets = cursor.fetchall()
-        cursor.close()
+        targets = []
+        try:
+            #cursor = self.connection.cursor()
+            with self.connection.cursor() as cursor:
+                cursor.execute(cone_query + sub_query, cone_values)
+                targets.extend(cursor.fetchall())
+        except OperationalError:
+            alert(self.r,
+            f":warning: MySQL connection not available",
+            "target selector")
         return targets
 
     def format_targets(self, targets, pointing):
