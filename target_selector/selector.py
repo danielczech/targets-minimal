@@ -120,11 +120,11 @@ class Selector(object):
             return
         self.calc_targets(target, ra_deg, dec_deg, f_max, obsid, band)
 
-    def calc_targets(self, target, ra_deg, dec_deg, f_max, obsid, band):
+    def calc_targets(self, primary_src, ra_deg, dec_deg, f_max, obsid, band):
         """Calculates and communicates targets within the current field of
         view to downstream processes.
         """
-        primary_target = {"source_id":target, "ra":ra_deg, "dec":dec_deg}
+        primary_target = {"source_id":primary_src, "ra":ra_deg, "dec":dec_deg}
         target_list = self.Triage.triage(ra_deg, dec_deg, self.d, f_max, band)
         json_list = self.Triage.format_targets(target_list, primary_target)
         # Write the list of targets to Redis under OBSID and alert listeners
