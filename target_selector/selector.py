@@ -1,6 +1,7 @@
 import redis
 import time
 import json
+import threading
 
 from target_selector.triage import Triage
 from target_selector.logger import log
@@ -129,8 +130,16 @@ class Selector(object):
         # that new targets are available:
         self.redis_server.set(f"targets:{obsid}", json_list)
         # Temporary: Apply delay to ensure 60 + 15 second delay 
-        current_duration = time.time() - self.msg_ts
-        log.info(current_duration)
+        delta = time.time() - self.msg_ts
+        log.info(delta)
+        # Write in separate thread so as not to block other requests
+        t = threading.Thread(target=self.alert_delayed, args=(obsid, delta))
+        t.start()
+
+    def alert_delayed(self, obsid, current_duration):
+        """Publish target alert after a delay of 60 + 15 seconds, required for
+        the `bfr5_generator`.
+        """
         if(current_duration < DELAY):
             log.info(f'TEMPORARY: sleeping for {DELAY - current_duration} seconds.')
             time.sleep(DELAY - current_duration)
