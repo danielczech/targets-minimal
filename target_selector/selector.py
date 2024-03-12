@@ -45,13 +45,14 @@ class Selector(object):
         """
         log.info('Starting the target selector.')
         ps = self.redis_server.pubsub(ignore_subscribe_messages=True)
-        ps.subscribe(self.pointing_channel)
+        ps.subscribe([self.pointing_channel, self.proc_channel])
         log.info(f"Listening for new pointings on: {self.pointing_channel}")
-        ps.subscribe(f"{self.proc_channel}")
+        #ps.subscribe(f"{self.proc_channel}")
         log.info(f"Listening for completion on: {self.proc_channel}")
         log.info(f"Publishing results to: {self.targets_channel}")
         for msg in ps.listen():
             self.msg_ts = time.time()
+            log.info(f"received msg {msg}")
             self.parse_msg(msg)
 
     def parse_msg(self, msg):
