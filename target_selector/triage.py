@@ -5,6 +5,7 @@ import json
 import redis
 
 from target_selector.logger import log
+from target_selector.util import alert
 
 class Triage:
     """Connect to the main target list database and rank objects in the field
