@@ -28,32 +28,6 @@ class Triage:
             config = yaml.safe_load(f)
         return mysql.connector.connect(**config)
 
-    def get_score(self, band, source_id):
-        """Get existing score.
-        """
-        # Check input for `band`:
-        if band not in self.valid_bands:
-            log.error("Bad input for `band`")
-            raise ValueError
-        cursor = self.connection.cursor()
-        query = f"SELECT {band} FROM targets WHERE source_id = %s"
-        cursor.execute(query, (source_id,))
-        score = cursor.fetchone()
-        cursor.close()
-        return int(score[0])
-
-    def set_score(self, band, source_id, score):
-        """Set score in table.
-        """
-        # Check input for `band`:
-        if band not in self.valid_bands:
-            log.error("Bad input for `band`")
-            raise ValueError
-        cursor = self.connection.cursor()
-        update = f"UPDATE targets SET {band} = %s WHERE source_id = %s"
-        cursor.execute(update, (score, source_id))
-        self.connection.commit()
-        cursor.close()
 
     def update(self, band, source_id, t, nsegs, nants):
         """Atomic update of scores for specified sources.
