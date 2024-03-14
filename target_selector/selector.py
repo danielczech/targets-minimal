@@ -80,7 +80,7 @@ class Selector(object):
             log.error("Invalid JSON")
             return
         try:
-            n = update["n"]
+            nsegs = update["nsegs"]
             band = update["band"]
             t = update["t"]
             nants = update["nants"]
@@ -90,10 +90,13 @@ class Selector(object):
             log.error(f"Missing key: {e}")
             return
         # Get targets that were just processed
-        targets = self.Triage.get_targets(obsid, nbeams)
+        targets = self.triage.get_targets(obsid, nbeams)
+        t1 = time.time()
         # In sequence for now; consider altering format in future
         for target in targets:
-            self.Triage.update(band, target["source_id"], t, n, nants)
+            self.triage.update(band, target["source_id"], t, nsegs, nants)
+        td = time.time() - t1
+        log.info(f"Duration: {td}")
         log.info(f"Updated target scores for {obsid}")
 
     def pointing(self, msg):
