@@ -51,7 +51,6 @@ class Selector(object):
         log.info(f"Listening for completion on: {self.proc_channel}")
         log.info(f"Publishing results to: {self.targets_channel}")
         for msg in ps.listen():
-            self.msg_ts = time.time()
             log.info(f"received msg {msg}")
             self.parse_msg(msg)
 
@@ -131,22 +130,15 @@ class Selector(object):
         # Write the list of targets to Redis under OBSID and alert listeners
         # that new targets are available:
         self.redis_server.set(f"targets:{obsid}", json_list)
-        # Temporary: Apply delay to ensure 60 + 15 second delay 
-        delta = time.time() - self.msg_ts
-        log.info(delta)
         # Write in separate thread so as not to block other requests
-        t = threading.Thread(target=self.alert_delayed, args=(obsid, delta))
+        t = threading.Thread(target=self.alert_delayed, args=(obsid, DELAY))
         t.start()
 
-    def alert_delayed(self, obsid, current_duration):
+    def alert_delayed(self, obsid, delay):
         """Publish target alert after a delay of 60 + 15 seconds, required for
         the `bfr5_generator`.
         """
-        if(current_duration < DELAY):
-            log.info(f'TEMPORARY: sleeping for {DELAY - current_duration} seconds.')
-            time.sleep(DELAY - current_duration)
+        log.info(f'TEMP: sleeping for {delay} seconds for bfr5_generator.')
+        time.sleep(delay)
         self.redis_server.publish(self.targets_channel, f"targets:{obsid}")
         log.info(f"Published {obsid} to {self.targets_channel}")
-
-
-
