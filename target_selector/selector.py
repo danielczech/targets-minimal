@@ -47,7 +47,6 @@ class Selector(object):
         ps = self.redis_server.pubsub(ignore_subscribe_messages=True)
         ps.subscribe([self.pointing_channel, self.proc_channel])
         log.info(f"Listening for new pointings on: {self.pointing_channel}")
-        #ps.subscribe(f"{self.proc_channel}")
         log.info(f"Listening for completion on: {self.proc_channel}")
         log.info(f"Publishing results to: {self.targets_channel}")
         for msg in ps.listen():
