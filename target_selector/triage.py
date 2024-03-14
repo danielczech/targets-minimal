@@ -67,8 +67,8 @@ class Triage:
         values = (dec, dec, ra, r)
         return query, values
 
-    def triage(self, ra, dec, d, f, band):
-        """Triage sources within search area
+    def rank_sources(self, ra, dec, d, f, band):
+        """Triage sources within search area.
         """
         # Check input for `band`:
         if band not in self.valid_bands:
