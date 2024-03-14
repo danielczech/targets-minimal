@@ -13,7 +13,7 @@ class Triage:
     of view by observing priority.
     """
 
-    def __init__(self, config, redis_endpoint):
+    def __init__(self, config_file, redis_endpoint):
         self.connection = self.connect(config)
         redis_host, redis_port = redis_endpoint.split(':')
         self.r = redis.StrictRedis(host=redis_host,
@@ -21,10 +21,10 @@ class Triage:
                                    decode_responses=True)
         self.valid_bands = {"u", "l", "s0", "s1", "s2", "s3", "s4"}
 
-    def connect(self, config):
+    def connect(self, config_file):
         """Connect to DB.
         """
-        with open(config, "r") as f:
+        with open(config_file, "r") as f:
             config = yaml.safe_load(f)
         return mysql.connector.connect(**config)
 

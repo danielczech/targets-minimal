@@ -14,7 +14,8 @@ class Selector(object):
     messages, updating the observing priority table accordingly.
     """
 
-    def __init__(self, redis_ep, pointings, targets, processing, config, d):
+    def __init__(self, redis_ep, pointings, targets, processing, config_file,
+                 diameter):
         """Initialises a target selector instance.
 
         Args:
@@ -25,20 +26,19 @@ class Selector(object):
             will publish target information.
             processing (str): Name of the channel from which the target
             selector will receive information about completed processing units.
-            config (str): Location of the database config file (yml).
-            d (float): diameter of telescope antenna (used in generic FoV
-            calculation) in meters.
+            config_file (str): Location of the database config file (yml).
+            diameter (float): diameter of telescope antenna (used in generic
+            FoV calculation) in meters.
         """
         redis_host, redis_port = redis_ep.split(':')
-        self.redis_server = redis.StrictRedis(host=redis_host, 
-                                              port=redis_port, 
+        self.redis_server = redis.StrictRedis(host=redis_host,
+                                              port=redis_port,
                                               decode_responses=True)
         self.pointing_channel = pointings
         self.targets_channel = targets
         self.proc_channel = processing
-        self.msg_ts = 0
-        self.Triage = Triage(config, redis_ep)
-        self.d = d
+        self.triage = Triage(config_file, redis_ep)
+        self.diameter = diameter
 
     def start(self):
         """Start the target selector.
@@ -125,8 +125,9 @@ class Selector(object):
         view to downstream processes.
         """
         primary_target = {"source_id":primary_src, "ra":ra_deg, "dec":dec_deg}
-        target_list = self.Triage.triage(ra_deg, dec_deg, self.d, f_max, band)
-        json_list = self.Triage.format_targets(target_list, primary_target)
+        target_list = self.triage.rank_sources(ra_deg, dec_deg, self.diameter,
+                                               f_max, band)
+        json_list = self.triage.format_targets(target_list, primary_target)
         # Write the list of targets to Redis under OBSID and alert listeners
         # that new targets are available:
         self.redis_server.set(f"targets:{obsid}", json_list)

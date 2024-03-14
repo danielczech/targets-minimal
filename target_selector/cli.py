@@ -28,7 +28,7 @@ def cli(args = sys.argv[0]):
                         type = str,
                         default = 'target-selector:processing',
                         help = 'Channel from which processing messages will be received.')
-    parser.add_argument('--config',
+    parser.add_argument('--config_file',
                         type = str,
                         default = 'config.yml',
                         help = 'Database configuration file.')
@@ -44,10 +44,11 @@ def cli(args = sys.argv[0]):
          pointing_chan = args.pointing_channel,
          targets_chan = args.targets_channel,
          proc_chan = args.processing_channel,
-         config = args.config,
-         d = args.diameter)
+         config_file = args.config_file,
+         diameter = args.diameter)
 
-def main(redis_endpoint, pointing_chan, targets_chan, proc_chan, config, d):
+def main(redis_endpoint, pointing_chan, targets_chan, proc_chan, config_file,
+         diameter):
     """Starts the minimal target selector.
 
     Args:
@@ -64,7 +65,7 @@ def main(redis_endpoint, pointing_chan, targets_chan, proc_chan, config, d):
     """
     set_logger('DEBUG')
     TargetSelector = Selector(redis_endpoint, pointing_chan, targets_chan,
-                              proc_chan, config, d)
+                              proc_chan, config_file, diameter)
     TargetSelector.start()
 
 if(__name__ == '__main__'):
