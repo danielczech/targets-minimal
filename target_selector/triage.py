@@ -14,7 +14,7 @@ class Triage:
     """
 
     def __init__(self, config_file, redis_endpoint):
-        self.connection = self.connect(config)
+        self.connection = self.connect(config_file)
         redis_host, redis_port = redis_endpoint.split(':')
         self.r = redis.StrictRedis(host=redis_host,
                                    port=redis_port,
