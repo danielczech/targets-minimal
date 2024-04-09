@@ -95,8 +95,7 @@ class Selector(object):
         for target in targets:
             self.triage.update(band, target["source_id"], t, nsegs, nants)
         td = time.time() - t1
-        log.info(f"Duration: {td}")
-        log.info(f"Updated target scores for {obsid}")
+        log.info(f"Updated target scores for {obsid} in {td} seconds")
 
     def pointing(self, msg):
         """Processes a request for targets in the FoV of a new pointing.
