@@ -4,6 +4,7 @@ import yaml
 import scipy.constants as constants
 import json
 import redis
+import numpy as np
 
 from target_selector.logger import log
 from target_selector.util import alert
@@ -67,9 +68,11 @@ class Triage:
         values = (dec, dec, ra, r)
         return query, values
 
-    def rank_sources(self, ra, dec, d, f, band):
+    def rank_sources(self, ra_deg, dec_deg, d, f, band):
         """Triage sources within search area.
         """
+        ra = np.deg2rad(ra_deg)
+        dec = np.deg2rad(dec_deg)
         # Check input for `band`:
         if band not in self.valid_bands:
             log.error("Bad input for `band`")
