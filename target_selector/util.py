@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 SLACK_CHANNEL = "meerkat-obs-log"
 SLACK_PROXY_CHANNEL = "slack-messages"
