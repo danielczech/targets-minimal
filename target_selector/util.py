@@ -16,6 +16,7 @@ def alert(r, message, name, slack_channel=SLACK_CHANNEL,
     """
     # Format: <Slack channel>:<Slack message text>
     alert_msg = f"{slack_channel}:[{timestring()} - {name}] {message}"
+    log.info(alert_msg)
     r.publish(slack_proxy_channel, alert_msg)
 
 def timestring():
